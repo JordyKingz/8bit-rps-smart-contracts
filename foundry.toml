@@ -4,3 +4,16 @@ out = "out"
 libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+eth-rpc-url="https://testnet-rpc.monad.xyz"
+chain_id = 10143
+
+
+[rpc_endpoints]
+localhost = "${RPC_URL_LOCAL}"
+sepolia = "${RPC_URL_DEV}"
+mainnet = "${RPC_URL_PRD}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+

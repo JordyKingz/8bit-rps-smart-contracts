@@ -3,8 +3,11 @@ pragma solidity ^0.8.12;
 library GameStructs {
     struct Game {
         uint Id;
-        address PlayerAddress;
-        GameAction Action;
+        address PlayerOneAddress;
+        address PlayerTwoAddress;
+        address WinnerAddress;
+        GameAction PlayerOneAction;
+        GameAction PlayerTwoAction;
         GameResult Result;
         uint Wager;
         GameState State;
@@ -25,6 +28,8 @@ library GameStructs {
     }
 
     enum GameState {
+        CREATED,
+        START,
         WAGER_SET,
         RESULT_SET,
         CANCELED
