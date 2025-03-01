@@ -9,7 +9,7 @@ import "./structs/GameStructs.sol";
 contract GameContract is Ownable, ReentrancyGuard {
     uint public GAME_FEE = 7 ether;
     uint public TOTAL_PERCENTAGE = 100 ether;
-    uint public MAX_WAGER = 250 ether;
+    uint public MAX_WAGER = 1 ether;
 
     address payable public TEAM_VAULT;
     address public GAME_MANAGER;
@@ -95,6 +95,31 @@ contract GameContract is Ownable, ReentrancyGuard {
         return _gameId;
     }
 
+    function SetDraw(uint _gameId, uint _action) nonReentrant OnlyGameManager external returns (bool) {
+        _validGame(_gameId);
+        _requireState(_gameId, GameStructs.GameState.START);
+
+        GameStructs.Game storage game = Games[_gameId];
+        require(address(this).balance >= (game.Wager * 2), "Error: Not enough funds in contract for payout");
+
+        game.Result = GameStructs.GameResult.DRAW;
+        game.WinnerAddress = address(0);
+        game.State = GameStructs.GameState.RESULT_SET;
+        game.PlayerOneAction = GameStructs.GameAction(_action);
+        game.PlayerTwoAction = GameStructs.GameAction(_action);
+        uint256 returnWager = game.Wager;
+
+        uint paybackAmount = _takeGameFee(returnWager);
+
+        emit GameEnded(_gameId, GameStructs.GameAction(_action), GameStructs.GameAction(_action), address(0));
+        (bool successP1, ) = payable(game.PlayerOneAddress).call{value:paybackAmount}('Transfer back wager');
+        require(successP1, "Error: Returning back wager to player failed");
+        (bool successP2, ) = payable(game.PlayerTwoAddress).call{value:paybackAmount}('Transfer back wager');
+        require(successP2, "Error: Returning back wager to player failed");
+
+        return successP1 && successP2;
+    }
+
     function SetGameResult(uint _gameId, address _winner, uint _p1, uint _p2) nonReentrant OnlyGameManager external returns (bool) {
         _validGame(_gameId);
         _requireState(_gameId, GameStructs.GameState.START);
@@ -103,7 +128,15 @@ contract GameContract is Ownable, ReentrancyGuard {
         GameStructs.Game storage game = Games[_gameId];
         require(address(this).balance >= (game.Wager * 2), "Error: Not enough funds in contract for payout");
 
-        game.WinnerAddress == _winner;
+        if (_winner == game.PlayerOneAddress) {
+            game.Result = GameStructs.GameResult.PLAYER1;
+        } else if (_winner == game.PlayerTwoAddress) {
+            game.Result = GameStructs.GameResult.PLAYER2;
+        } else {
+            revert("Error: Winner address is not a player");
+        }
+
+        game.WinnerAddress = _winner;
         game.State = GameStructs.GameState.RESULT_SET;
         game.PlayerOneAction = GameStructs.GameAction(_p1);
         game.PlayerTwoAction = GameStructs.GameAction(_p2);
@@ -142,6 +175,7 @@ contract GameContract is Ownable, ReentrancyGuard {
      * @param _newWager the new MAX_WAGER value
     */
     function SetMaxWager(uint _newWager) onlyOwner external returns(uint) {
+        require(_newWager > 0, "Error: New wager must be greater than 0");
         MAX_WAGER = _newWager;
         return MAX_WAGER;
     }
@@ -193,7 +227,7 @@ contract GameContract is Ownable, ReentrancyGuard {
      * @dev Private function to check if game exists
      * @param _gameId the id of the game
     */
-    function _validGame(uint _gameId) private {
+    function _validGame(uint _gameId) private view {
         require(Games[_gameId].Exists, "Error: Game doesn't exist");
     }
 
@@ -202,7 +236,7 @@ contract GameContract is Ownable, ReentrancyGuard {
      * @param _gameId the id of the game
      * @param _state the required state of the game
     */
-    function _requireState(uint _gameId, GameStructs.GameState _state) private {
+    function _requireState(uint _gameId, GameStructs.GameState _state) private view {
         require(Games[_gameId].State == _state, "Error: Game state don't match");
     }
 }

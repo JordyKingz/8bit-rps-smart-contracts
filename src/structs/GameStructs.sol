@@ -16,9 +16,9 @@ library GameStructs {
 
     enum GameResult {
         UNKNOWN,
-        WIN,
-        LOSE,
-        TIE
+        DRAW,
+        PLAYER1,
+        PLAYER2
     }
 
     enum GameAction {

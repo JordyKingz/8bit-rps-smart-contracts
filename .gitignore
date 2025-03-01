@@ -15,6 +15,3 @@ docs/
 
 .idea
 
-script/helpers/Balance.s.sol
-script/helpers/Transfer.s.sol
-script/FundPlayers.s.sol
