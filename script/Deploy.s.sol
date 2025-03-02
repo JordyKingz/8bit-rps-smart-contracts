@@ -10,7 +10,7 @@ contract Deploy is Script {
 
     address public deployer = address(0x73673Baa430f20d45dA0d14073988d9F22db1C23);
     function run() public {
-        _local();
+//        _local();
 
         deploy();
     }
