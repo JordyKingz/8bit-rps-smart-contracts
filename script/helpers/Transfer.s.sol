@@ -8,7 +8,7 @@ contract Transfer is Script {
     address public deployer = address(0x73673Baa430f20d45dA0d14073988d9F22db1C23);
 
     address public tokenAddress = address(0x836047a99e11F376522B447bffb6e3495Dd0637c);
-    address public receiver = address(0x7B52aC329297D8172102776d6956b7f26A00e7BA);
+    address public receiver = address(0x73673Baa430f20d45dA0d14073988d9F22db1C23);
 
     function run() public {
 //        transferToken();
